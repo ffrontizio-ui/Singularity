@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="glass-panel" style="padding: 3rem; line-height: 1.8;">
+        <h1 style="color: var(--accent-color); margin-bottom: 0.5rem; text-align: center; font-size: 2.5rem; text-transform: uppercase;">Comprehensive User Guide</h1>
+        <p style="text-align: center; color: rgba(255, 255, 255, 0.6); margin-bottom: 3rem; font-family: var(--font-mono); font-size: 0.9rem;">
+            SINGULARITY PROTOCOL DOCUMENTATION // V1.0
+        </p>
+
+        <section style="margin-bottom: 3rem;">
+            <h2 style="color: #fff; border-bottom: 1px dashed var(--border-color); padding-bottom: 0.5rem;">1. What is Singularity?</h2>
+            <p style="color: #ccc;">
+                <strong>Singularity</strong> is a Darknet microblogging platform and onion link directory built entirely on the principle of <strong>Zero-Trust</strong> and decentralized identity.
+                The platform contains zero user databases, requires no emails or passwords, and uses no tracking telemetry. Your identity here is purely a set of cryptographic keys.
+            </p>
+        </section>
+
+        <section style="margin-bottom: 3rem;">
+            <h2 style="color: #fff; border-bottom: 1px dashed var(--border-color); padding-bottom: 0.5rem;">2. Identity & Crypto</h2>
+            <p style="color: #ccc;">To begin transmitting, you don't need a traditional account. Follow these steps:</p>
+            <ul style="color: #ccc; margin-left: 1.5rem;">
+                <li style="margin-bottom: 1rem;">
+                    <strong style="color: var(--accent-color);">Generate Identity:</strong> Navigate to the <a href="/generate-seed" style="color: var(--accent-color);">Generate Identity</a> page. The system will give you a 15-word Mnemonic Seed.
+                </li>
+                <li style="margin-bottom: 1rem;">
+                    <strong style="color: var(--error-color);">Secure Your Seed:</strong> These 15 words are your absolute and only private key. Losing them means losing your identity forever. There is no "Forgot Password" feature because we don't own your data.
+                </li>
+                <li>
+                    <strong>Public Fingerprint:</strong> When you publish a post, the grid only sees your Public Key. It's an irreversible alphanumeric string that proves grid ownership without compromising your anonymity.
+                </li>
+            </ul>
+        </section>
+
+        <section style="margin-bottom: 3rem;">
+            <h2 style="color: #fff; border-bottom: 1px dashed var(--border-color); padding-bottom: 0.5rem;">3. Data Transmission (Proof of Work)</h2>
+            <p style="color: #ccc;">
+                To prevent spam bots from flooding the grid, we replace privacy-invasive Captchas with a cryptographic <strong>Proof of Work (PoW)</strong> system.
+            </p>
+            <ul style="color: #ccc; margin-left: 1.5rem;">
+                <li style="margin-bottom: 1rem;">When drafting a post on the <a href="/publish" style="color: var(--accent-color);">Transmit Post</a> page, your browser will silently compute a complex mathematical hash (Nonce). This takes a few seconds before the submit button unlocks.</li>
+                <li style="margin-bottom: 1rem;"><strong>Self-Destruct Protocol:</strong> You can dictate your post's survival time (1 Hour, 24 Hours, or 7 Days). Once the timer hits zero, the node permanently shreds your text and attached images from the database.</li>
+                <li><strong>Secure Attachments:</strong> Any image you upload goes through an automated filter that strips all EXIF metadata (which could leak GPS coordinates or camera models) before saving it purely as safe pixel data.</li>
+            </ul>
+        </section>
+
+        <section style="margin-bottom: 3rem;">
+            <h2 style="color: #fff; border-bottom: 1px dashed var(--border-color); padding-bottom: 0.5rem;">4. Darknet Directory & Voting</h2>
+            <p style="color: #ccc;">
+                The platform features a smart Onion Link index accessible at the <a href="/directory" style="color: var(--accent-color);">Darknet Directory</a>. This is heavily driven by community intelligence:
+            </p>
+            <ul style="color: #ccc; margin-left: 1.5rem;">
+                <li style="margin-bottom: 1rem;">
+                    <strong>Automated Verification:</strong> When you contribute a new .onion link, the server pings it via the Tor network in the background. Dead links are labeled OFFLINE until they respond.
+                </li>
+                <li style="margin-bottom: 1rem;">
+                    <strong>Auto-Mirrors:</strong> If you try to visit an offline target, the system dynamically hunts for an active mirror with identical taxonomy and stealthily reroutes your connection.
+                </li>
+                <li style="margin-bottom: 1rem;">
+                    <strong>Intermediary Security Layer (Preview Service):</strong> Accessing an indexed link throws you into a sandbox preview screen. This screen actively scans the target's HTTP headers and scrapes PGP public keys to prevent phishing attacks.
+                </li>
+                <li>
+                    <strong>Decentralized Voting:</strong> You can Upvote or Downvote platforms. Votes are guarded by rotating Server-Side Hashes to prevent brute-forcing without logging IP addresses. Downvoted thresholds auto-label grids as "HIGH RISK / SCAM."
+                </li>
+            </ul>
+        </section>
+
+        <section style="margin-bottom: 3rem;">
+            <h2 style="color: #fff; border-bottom: 1px dashed var(--border-color); padding-bottom: 0.5rem;">5. Extreme Privacy Guidelines</h2>
+            <div style="background: rgba(0,0,0,0.4); border-left: 4px solid var(--error-color); padding: 1.5rem;">
+                <p style="color: #ffcc00; font-weight: bold; margin-bottom: 0.5rem;">NO-JS MODE PROTOCOLS</p>
+                <p style="color: #ccc; margin-bottom: 1rem;">Running the Tor Browser on 'Safest' (Disabling Javascript) is partially supported by the architecture:</p>
+                <ol style="color: #ccc; margin-left: 1.5rem;">
+                    <li>To transmit posts or directory links without JS, you must manually run the `pow_solver.py` script locally on an air-gapped machine and manually inject the `nonce` via CURL or raw HTTP requests.</li>
+                    <li>The Tor Browser is the ONLY supported avenue for traversing this grid securely.</li>
+                    <li>Never leak your 15-word mnemonic phrase. Anyone possessing it cryptographically becomes you.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section style="margin-bottom: 3rem;">
+            <h2 style="color: #fff; border-bottom: 1px dashed var(--border-color); padding-bottom: 0.5rem;">6. Personal Bitcoin Addresses (Tips)</h2>
+            <p style="color: #ccc;">
+                Every identity on Singularity is automatically mapped to a unique Bitcoin (BTC) address.
+            </p>
+            <ul style="color: #ccc; margin-left: 1.5rem;">
+                <li style="margin-bottom: 1rem;">
+                    <strong>Deterministic Mapping:</strong> Your 15-word seed derivatively generates your Bitcoin address. This address is persistent; it will never change for your identity.
+                </li>
+                <li>
+                    <strong>Native Segwit:</strong> We use the modern `bc1q` (Bech32) format, ensuring minimal transaction fees and maximum compatibility with privacy-focused wallets.
+                </li>
+            </ul>
+        </section>
+
+        <section>
+            <h2 style="color: #fff; border-bottom: 1px dashed var(--border-color); padding-bottom: 0.5rem;">7. Data Retrieval (Export)</h2>
+            <p style="color: #ccc;">
+                It is your absolute right to reclaim your data footprints. From the <a href="/export" style="color: var(--accent-color);">Export My Grid</a> page, enter your cryptographic seed to download an unadulterated JSON ledger containing your historic transmissions and digital signatures.
+            </p>
+        </section>
+        
+        <div style="text-align: center; margin-top: 4rem;">
+            <a href="/" class="btn" style="padding: 1rem 3rem; font-size: 1.1rem;">Initialize Sync &larr;</a>
+        </div>
+    </div>
+{% endblock %}

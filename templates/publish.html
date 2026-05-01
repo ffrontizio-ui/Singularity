@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div>
+        <h1>Transmit <strong>Data</strong></h1>
+        <p style="margin-bottom: 2rem; color: #888;">
+            Requires active Proof-of-Work to deter spam. Run <code>python3 pow_solver.py "your_content_exactly"</code> locally to generate a valid Nonce.
+        </p>
+
+        <form action="/publish" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="mnemonic">Identity (15-word seed)</label>
+                <input type="password" id="mnemonic" name="mnemonic" required placeholder="word1 word2 ... word15">
+            </div>
+
+            <div class="form-group">
+                <label for="content">Payload Content</label>
+                <textarea id="content" name="content" required placeholder="Enter transmission data here..."></textarea>
+            </div>
+
+            <div class="form-group" style="position: relative;">
+                <label for="nonce">Proof of Work Nonce (Auto-generated)</label>
+                <input type="text" id="nonce" name="nonce" required placeholder="Will be calculated automatically..." readonly style="background: var(--bg-color); color: var(--text-color); opacity: 0.8;">
+                <div id="pow-status" style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--accent-color);"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="location">Broadcasting From (Optional Proxy Location)</label>
+                <input type="text" id="location" name="location" placeholder="e.g. Mars Colony, The Void, Deep Web Node 7">
+            </div>
+
+            <div class="form-group">
+                <label for="survival_time">Survival Time (Self-Destruction)</label>
+                <select id="survival_time" name="survival_time" required>
+                    <option value="1_hour">1 Hour</option>
+                    <option value="24_hours">24 Hours</option>
+                    <option value="7_days">7 Days</option>
+                    <option value="permanent" selected>Permanent</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="image">Attachment (Optional JPG)</label>
+                <input type="file" id="image" name="image" accept="image/jpeg, image/png, image/webp">
+                <small style="color: #666; display: block; margin-top: 0.5rem;">EXIF strictly stripped at edge. No videos allowed.</small>
+            </div>
+
+            <button type="submit" id="submit-btn" class="btn" disabled style="opacity: 0.5; cursor: not-allowed;">Initiate Transmission (Calculating PoW...)</button>
+        </form>
+        
+        <script>
+            // JS PoW Engine for DDoS Protection
+            const contentInput = document.getElementById('content');
+            const nonceInput = document.getElementById('nonce');
+            const submitBtn = document.getElementById('submit-btn');
+            const statusDiv = document.getElementById('pow-status');
+            let calculationTimer = null;
+
+            async function computeHashString(message) {
+                const msgBuffer = new TextEncoder().encode(message);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            }
+
+            async function startPowCalculation() {
+                const content = contentInput.value;
+                if (!content) {
+                    statusDiv.innerText = "Waiting for content...";
+                    submitBtn.disabled = true;
+                    submitBtn.style.opacity = '0.5';
+                    submitBtn.style.cursor = 'not-allowed';
+                    nonceInput.value = "";
+                    return;
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.5';
+                submitBtn.innerText = "Calculating Proof of Work (ETA ~10s)...";
+                statusDiv.innerText = "Hashing engines engaged...";
+                nonceInput.value = "";
+
+                let nonce = 0;
+                const difficultyTarget = "0000"; // 4 Zeros
+                
+                // Using an async loop with yields to prevent browser freeze
+                const computeChunk = async () => {
+                    // Check if content changed during chunk
+                    if (contentInput.value !== content) return;
+
+                    for (let i = 0; i < 200; i++) {
+                        let h = await computeHashString(content + nonce.toString());
+                        if (h.startsWith(difficultyTarget)) {
+                            nonceInput.value = nonce.toString();
+                            statusDiv.innerText = "PoW Hash Solved: " + h;
+                            submitBtn.disabled = false;
+                            submitBtn.style.opacity = '1';
+                            submitBtn.style.cursor = 'pointer';
+                            submitBtn.innerText = "Initiate Transmission";
+                            return;
+                        }
+                        nonce++;
+                    }
+                    // Yield
+                    setTimeout(computeChunk, 0);
+                };
+                
+                computeChunk();
+            }
+
+            contentInput.addEventListener('input', () => {
+                if (calculationTimer) clearTimeout(calculationTimer);
+                statusDiv.innerText = "Content changed, waiting to settle...";
+                calculationTimer = setTimeout(startPowCalculation, 1500); // 1.5s debounce
+            });
+        </script>
+        
+        <noscript>
+            <div class="alert alert-error" style="margin-top: 2rem;">
+                <strong>NO-JS MODE DETECTED:</strong> You have JS disabled. To post, you must use <code>pow_solver.py</code> to calculate the nonce manually, then use browser developer tools to remove the 'readonly' and 'disabled' attributes from the form fields.
+            </div>
+        </noscript>
+    </div>
+{% endblock %}

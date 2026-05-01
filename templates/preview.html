@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 900px; margin: 2rem auto;">
+    <h1 style="color: var(--accent-color); margin-bottom: 1rem; text-align: center;">Safety Preview / Intermediary Layer</h1>
+    <p style="color: #888; margin-bottom: 2rem; text-align: center; font-family: var(--font-mono);">
+        <strong>Target:</strong> {{ link.name }} &mdash; <code>{{ link.url }}</code>
+    </p>
+
+    <!-- Mirror Auto-Switch Notification -->
+    {% if mirror_activated %}
+        <div style="border: 1px solid #ffcc00; background: rgba(255,204,0,0.1); padding: 1rem; border-radius: 8px; margin-bottom: 2rem; color: #ffcc00; text-align: center;">
+            <strong style="font-size: 1.1rem; display: block; margin-bottom: 0.5rem;">⚠️ Primary Link Offline</strong>
+            <p>We successfully routed you to a working official Mirror.</p>
+        </div>
+    {% endif %}
+
+    <!-- Uptime Graph -->
+    <div style="margin-bottom: 2rem;">
+        <h3 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.1rem;">Link Reliability (Last 24h Activity)</h3>
+        <div style="display: flex; gap: 4px; padding: 1rem; background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); border-radius: 8px; overflow-x: auto;">
+            {% if uptime_history and uptime_history|length > 0 %}
+                {% for log in uptime_history %}
+                    <div title="{{ 'Online' if log.is_online else 'Offline' }} - {{ log.timestamp }}" style="width: 15px; height: 30px; border-radius: 3px; background: {{ '#00ffcc' if log.is_online else '#ff3366' }}; opacity: 0.8; flex-shrink: 0;"></div>
+                {% endfor %}
+                <span style="color: #aaa; font-size: 0.85rem; margin-left: 0.5rem; align-self: flex-end;">Now</span>
+            {% else %}
+                <div style="color: #666; font-size: 0.9rem; padding: 0.5rem;">No historical data available yet. Waiting for first background cycles.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Security Warnings -->
+    <div style="margin-bottom: 2rem;">
+        {% if warnings %}
+            <div style="border: 1px solid var(--error-color); background: rgba(255,51,102,0.1); padding: 1.5rem; border-radius: 8px;">
+                <h3 style="color: var(--error-color); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    Security Alert / Action Required
+                </h3>
+                <p style="color: #ffcccc; margin-bottom: 1rem;">The system detected potential risks on the requested onion site:</p>
+                <ul style="color: #ffcccc; margin-left: 1.5rem; list-style-type: square;">
+                    {% for w in warnings %}
+                        <li style="margin-bottom: 0.5rem;">{{ w }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% else %}
+            {% if has_screenshot %}
+            <div style="border: 1px solid var(--accent-color); background: rgba(0,255,204,0.1); padding: 1rem; border-radius: 8px; color: var(--accent-color);">
+                <strong>[✓] Standard HTML:</strong> No suspicious sensory requests (Device/Geolocation) found in the static body.
+            </div>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <!-- Tech Stack Intelligence -->
+    {% if headers_intel %}
+    <div style="margin-bottom: 2rem; border: 1px solid var(--border-color); background: rgba(0,0,0,0.4); border-radius: 8px; overflow: hidden;">
+        <h3 style="background: var(--bg-hover); margin: 0; padding: 0.8rem 1rem; color: #fff; font-size: 1rem; border-bottom: 1px solid var(--border-color);">Tech Stack Detection</h3>
+        <div style="padding: 1rem;">
+            {% for key, val in headers_intel.items() %}
+            <div style="margin-bottom: 0.5rem; display: flex; align-items: baseline;">
+                <strong style="color: var(--accent-color); width: 140px; flex-shrink: 0;">{{ key }}:</strong>
+                <span style="color: #ccc; font-family: var(--font-mono); font-size: 0.9rem;">{{ val }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- PGP Extractor -->
+    {% if pgp_key %}
+    <div style="margin-bottom: 2rem; border: 1px solid var(--border-color); background: rgba(0,0,0,0.4); border-radius: 8px; overflow: hidden;">
+        <div style="background: var(--bg-hover); margin: 0; padding: 0.8rem 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color);">
+            <h3 style="color: #fff; font-size: 1rem; margin: 0;">Extracted PGP Public Key</h3>
+            <button onclick="navigator.clipboard.writeText(document.getElementById('pgp-block').innerText); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 2000);" style="background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 0.2rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Copy</button>
+        </div>
+        <div style="padding: 0;">
+            <pre id="pgp-block" style="margin: 0; padding: 1rem; color: #00ffcc; font-family: var(--font-mono); font-size: 0.75rem; white-space: pre-wrap; word-wrap: break-word; max-height: 200px; overflow-y: auto; background: #0a0a0a;">{{ pgp_key|e }}</pre>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Screenshot -->
+    <h3 style="color: #fff; margin-bottom: 0.5rem; font-size: 1rem;">Live Snapshot:</h3>
+    <div style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-bottom: 2rem; background: #000; min-height: 400px; display: flex; align-items: center; justify-content: center; position: relative;">
+        {% if has_screenshot %}
+            <img src="{{ img_url }}" style="width: 100%; height: auto; display: block;" alt="Screenshot Preview">
+        {% else %}
+            <div style="text-align: center; color: #666; padding: 2rem; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                <p>No preview available. The connection failed or the site is unresponsive.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display: flex; gap: 1rem; justify-content: center;">
+        <a href="/directory" class="btn" style="background: transparent; border: 1px solid var(--text-color); color: var(--text-color); text-decoration: none;">&larr; Go Back</a>
+        
+        <script>
+            let countdown = 5;
+            function updateBtn() {
+                const b = document.getElementById("proceed-btn");
+                if (countdown > 0) {
+                    b.innerText = `Danger! Proceed in ${countdown}s...`;
+                    b.style.opacity = '0.5';
+                    b.style.pointerEvents = 'none';
+                    countdown--;
+                    setTimeout(updateBtn, 1000);
+                } else {
+                    b.innerText = "I understand the risks, Continue";
+                    b.style.opacity = '1';
+                    b.style.pointerEvents = 'auto';
+                }
+            }
+        </script>
+        
+        {% if not link.is_online and not mirror_activated %}
+            <a href="#" class="btn" style="background: transparent; color: #666; border: 1px solid #666; cursor: not-allowed; text-decoration: none; padding: 0.5rem 1.5rem;" onclick="event.preventDefault(); alert('The target server is Offline and no alternative Mirrors were found.');">Server Offline / No Mirrors</a>
+        {% else %}
+            <a href="{% if not link.url.startswith('http') %}http://{% endif %}{{ link.url }}" target="_blank" rel="noopener noreferrer" id="proceed-btn" class="btn" style="background: var(--error-color); color: #fff; text-decoration: none; border-color: var(--error-color); padding: 0.5rem 1.5rem;">Proceed to {{ 'Mirror' if mirror_activated else 'Target' }}</a>
+            
+            {% if warnings %}
+            <script>
+                // Start countdown only if warnings and link is actually accessible
+                setTimeout(updateBtn, 0);
+            </script>
+            {% endif %}
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

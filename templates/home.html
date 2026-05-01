@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div>
+        {% if not posts %}
+            <div class="alert alert-info">No transmissions found in the void. Be the first.</div>
+        {% endif %}
+        
+        {% for post in posts %}
+            <article class="post">
+                <div class="post-header">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                        <span class="pub-key" title="Public Identity Key">{{ post.public_key[:12] }}...{{ post.public_key[-12:] }}</span>
+                        {% if post.btc_address %}
+                        <span class="btc-badge" title="Click to copy Bitcoin address for tipping" onclick="navigator.clipboard.writeText('{{ post.btc_address }}'); alert('BTC Address Copied: {{ post.btc_address }}')">
+                            ₿ {{ post.btc_address[:8] }}...{{ post.btc_address[-4:] }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="date-stamp">
+                        {{ post.created_at[:16] }}
+                        {% if post.location %}
+                        | <span style="color: var(--accent-color); font-style: italic;">Broadcasting from: {{ post.location }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="post-content">{{ post.content }}</div>
+                
+                {% if post.image_path %}
+                <img src="/{{ post.image_path }}" class="post-image" alt="Uploaded transmission attachment">
+                {% endif %}
+                
+                <div class="post-footer">
+                    <div class="signature-block">
+                        <strong>SIG:</strong> {{ post.signature[:64] }}...
+                    </div>
+                    
+                    <button type="button" class="btn-like" id="like-btn-{{ post.id }}" onclick="submitLike('{{ post.id }}')">
+                        <span>▲</span>
+                        <span id="like-count-{{ post.id }}">{{ post.likes }}</span>
+                    </button>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+
+    <!-- JS explicitly allowed here for Spam deterrents natively -->
+    <script>
+        async function submitLike(postId) {
+            const btn = document.getElementById('like-btn-' + postId);
+            const countSpan = document.getElementById('like-count-' + postId);
+            
+            if (btn.disabled) return;
+            
+            // 5 second visual anti-spam cooldown timer
+            btn.disabled = true;
+            btn.style.opacity = '0.4';
+            btn.style.cursor = 'not-allowed';
+            
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            }, 5000);
+
+            try {
+                const response = await fetch('/like/' + postId, { method: 'POST' });
+                if (response.ok) {
+                    const data = await response.json();
+                    if(data.success) {
+                        countSpan.innerText = data.likes;
+                        btn.style.borderColor = 'var(--accent-color)';
+                        btn.style.color = 'var(--accent-color)';
+                    } else {
+                        alert(data.error);
+                    }
+                }
+            } catch(e) {
+                console.error("Like block error");
+            }
+        }
+    </script>
+{% endblock %}

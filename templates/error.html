@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div>
+        <h1>Operation <strong>Halted</strong></h1>
+        
+        <div class="alert alert-error">
+            <strong>ERROR:</strong> {{ error }}
+        </div>
+        
+        <div style="margin-top: 2rem;">
+            <a href="javascript:history.back()" class="btn btn-secondary" style="display: inline-block; text-decoration: none;">&lt; Go Back (If JS is enabled)</a>
+            <p style="margin-top: 1rem; color: #666;">Or navigate using the menu.</p>
+        </div>
+    </div>
+{% endblock %}

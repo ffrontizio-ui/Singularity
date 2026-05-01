@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container" style="max-width: 800px; margin: 2rem auto;">
+        <h1 style="text-align: center; color: var(--accent-color); margin-bottom: 2rem;">ENCRYPTION & SECURITY TOOLBOX</h1>
+        
+        <p style="text-align: center; margin-bottom: 3rem; color: rgba(255,255,255,0.7);">
+            All cryptographic operations run strictly within your local browser environment. The central servers possess zero oversight over parameters inputted across this interface.
+        </p>
+
+        <div class="post">
+            <h2 style="color: var(--accent-color); margin-bottom: 1rem;">1. Safe-Text Hash Generator (SHA-256)</h2>
+            <p style="font-size: 0.9rem; margin-bottom: 1rem;">Verify text footprint matching before transmission.</p>
+            <textarea id="hash-input" placeholder="Type data here to calculate integrity footprint..." rows="3" style="width:100%;"></textarea>
+            <div style="margin-top: 1rem; padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; background: rgba(0,0,0,0.2);">
+                <strong>Fingerprint: </strong><span id="hash-output" style="color: var(--accent-color); word-break: break-all;">[Waiting for data...]</span>
+            </div>
+        </div>
+
+        <div class="post">
+            <h2 style="color: var(--accent-color); margin-bottom: 1rem;">2. AES-GCM Sub-Encryption</h2>
+            <p style="font-size: 0.9rem; margin-bottom: 1rem;">Encrypt/Decrypt private blocks manually.</p>
+            
+            <div class="form-group">
+                <input type="password" id="aes-pass" placeholder="Secret Cipher Key" style="margin-bottom: 1rem;">
+            </div>
+            
+            <div class="form-group">
+                <textarea id="aes-input" placeholder="Data to Encrypt or Decrypt..." rows="4"></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                <button type="button" class="btn" id="btn-encrypt" style="flex:1;">Encrypt</button>
+                <button type="button" class="btn" id="btn-decrypt" style="flex:1; border-color:#888; color:#888;">Decrypt</button>
+            </div>
+
+            <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; background: rgba(0,0,0,0.2);">
+                <strong>Output Board:</strong>
+                <textarea id="aes-output" readonly rows="4" style="margin-top:0.5rem; background:transparent; border:none; box-shadow:none;"></textarea>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Strictly Local Cryptography Runtime -->
+    <script>
+        // SHA-256 Hashing Live
+        const hashInput = document.getElementById('hash-input');
+        const hashOutput = document.getElementById('hash-output');
+
+        async function computeSHA256(message) {
+            if(!message) return '[Waiting for data...]';
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        hashInput.addEventListener('input', async () => {
+            hashOutput.innerText = await computeSHA256(hashInput.value);
+        });
+
+        // AES-GCM Logic
+        const aesPass = document.getElementById('aes-pass');
+        const aesInput = document.getElementById('aes-input');
+        const aesOutput = document.getElementById('aes-output');
+
+        // Note: For real world military grade, use PBKDF2 for key derivation. Here we use an accelerated 256bit SHA key for simplicity.
+        async function getPasswordKey(pw) {
+            const enc = new TextEncoder();
+            const keyMaterial = await crypto.subtle.importKey(
+                "raw", enc.encode(pw), "PBKDF2", false, ["deriveBits", "deriveKey"]
+            );
+            return await crypto.subtle.deriveKey(
+                { name: "PBKDF2", salt: enc.encode("singularity_salt"), iterations: 100000, hash: "SHA-256" },
+                keyMaterial,
+                { name: "AES-GCM", length: 256 },
+                true,
+                ["encrypt", "decrypt"]
+            );
+        }
+
+        function bufferToBase64(buf) {
+            return btoa(String.fromCharCode.apply(null, new Uint8Array(buf)));
+        }
+
+        function base64ToBuffer(b64) {
+            const str = atob(b64);
+            const ary = new Uint8Array(str.length);
+            for(let i=0; i<str.length; i++) ary[i] = str.charCodeAt(i);
+            return ary.buffer;
+        }
+
+        document.getElementById('btn-encrypt').addEventListener('click', async () => {
+            try {
+                if(!aesPass.value || !aesInput.value) return alert("Requires Password and Target Text.");
+                const key = await getPasswordKey(aesPass.value);
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const encodedData = new TextEncoder().encode(aesInput.value);
+                const encryptedData = await crypto.subtle.encrypt(
+                    { name: "AES-GCM", iv: iv }, key, encodedData
+                );
+                // Payload structure: Base64(IV + Encrypted)
+                const payload = new Uint8Array(iv.length + encryptedData.byteLength);
+                payload.set(iv, 0);
+                payload.set(new Uint8Array(encryptedData), iv.length);
+                aesOutput.value = bufferToBase64(payload);
+            } catch(e) {
+                aesOutput.value = "Encryption Error: " + e.message;
+            }
+        });
+
+        document.getElementById('btn-decrypt').addEventListener('click', async () => {
+            try {
+                if(!aesPass.value || !aesInput.value) return alert("Requires Password and Target Text.");
+                const key = await getPasswordKey(aesPass.value);
+                const payloadBuf = base64ToBuffer(aesInput.value);
+                
+                const iv = payloadBuf.slice(0, 12);
+                const encryptedData = payloadBuf.slice(12);
+
+                const decryptedData = await crypto.subtle.decrypt(
+                    { name: "AES-GCM", iv: new Uint8Array(iv) },
+                    key,
+                    encryptedData
+                );
+                aesOutput.value = new TextDecoder().decode(decryptedData);
+            } catch(e) {
+                aesOutput.value = "Decryption Failure. Invalid Key or corrupted data.";
+            }
+        });
+    </script>
+{% endblock %}

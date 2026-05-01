@@ -1,0 +1,478 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;700&display=swap');
+
+:root {
+  --bg-color: #030303;
+  --bg-gradient: radial-gradient(circle at top right, #110022 0%, #030303 50%, #000000 100%);
+  --panel-bg: rgba(255, 255, 255, 0.02);
+  --border-color: rgba(255, 255, 255, 0.05);
+  --text-color: #e0e0e0;
+  --accent-color: #b829ea; /* Electric Purple */
+  --accent-hover: #d253ff;
+  --error-color: #ff3366;
+  --font-mono: 'Fira Code', monospace;
+  --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Light Mode / Sepia Overrides */
+.theme-toggle-checkbox:checked ~ .theme-wrapper {
+  --bg-color: #f4ecd8;
+  --bg-gradient: radial-gradient(circle at top right, #ffffff 0%, #f4ecd8 50%, #e6dac3 100%);
+  --panel-bg: rgba(255, 255, 255, 0.4);
+  --border-color: rgba(67, 52, 34, 0.1);
+  --text-color: #433422; /* Deep Brown Text */
+  --accent-color: #7b4a22; /* Sepia Contrast */
+  --accent-hover: #5a3415;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg-gradient);
+  background-attachment: fixed;
+  color: var(--text-color);
+  font-family: var(--font-mono);
+  line-height: 1.8;
+  font-size: 15px;
+  overflow-x: hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.theme-wrapper {
+  display: inherit;
+  flex-direction: inherit;
+  min-height: inherit;
+  width: 100%;
+  flex: 1;
+}
+
+::selection {
+  background: var(--accent-color);
+  color: var(--bg-color);
+}
+
+/* Base Layout Container */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+  width: 100%;
+}
+
+.css-theme-btn {
+  font-size: 0.8rem;
+  color: var(--text-color);
+  cursor: pointer;
+  padding: 0.4rem 0.8rem;
+  border: 1px dashed var(--border-color);
+  border-radius: 4px;
+  transition: var(--transition-smooth);
+}
+.css-theme-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+/* Header & Singularity Logo */
+header {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 2rem;
+  margin-bottom: 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-color);
+  letter-spacing: -1px;
+}
+
+.singularity-point {
+  width: 14px;
+  height: 14px;
+  background-color: var(--accent-color);
+  border-radius: 50%;
+  margin-right: 12px;
+  box-shadow: 0 0 10px var(--accent-color), 0 0 20px var(--accent-color);
+  animation: pulse 2s infinite alternate;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.9); box-shadow: 0 0 5px var(--accent-color); }
+  100% { transform: scale(1.1); box-shadow: 0 0 15px var(--accent-color), 0 0 30px var(--accent-color); }
+}
+
+nav a {
+  color: var(--text-color);
+  text-decoration: none;
+  margin-left: 1.5rem;
+  font-size: 0.9rem;
+  transition: var(--transition-smooth);
+}
+
+nav a:hover {
+  color: var(--accent-color);
+  text-shadow: 0 0 8px rgba(0, 255, 204, 0.4);
+}
+
+/* Bitcoin Support Widget (Sleek) */
+.support-widget {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  padding: 1rem 1.5rem;
+  border-radius: 4px;
+  margin-top: auto;
+  margin-bottom: 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition-smooth);
+}
+.support-widget:hover {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 20px rgba(0, 255, 204, 0.05);
+}
+.support-widget span.label {
+  color: #888;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.header-support {
+  background: rgba(184, 41, 234, 0.05); /* Match new Electric Purple */
+  backdrop-filter: blur(10px);
+  padding: 0.5rem 1.5rem;
+  border-radius: 20px;
+  border: 1px solid var(--accent-color);
+  box-shadow: 0 0 12px rgba(184, 41, 234, 0.4), inset 0 0 8px rgba(184, 41, 234, 0.2);
+  margin: 0;
+  animation: neon-pulse 3s infinite alternate;
+}
+@keyframes neon-pulse {
+  0% { box-shadow: 0 0 5px rgba(184, 41, 234, 0.2), inset 0 0 5px rgba(184, 41, 234, 0.1); }
+  100% { box-shadow: 0 0 15px rgba(184, 41, 234, 0.6), inset 0 0 10px rgba(184, 41, 234, 0.3); }
+}
+.header-support .btc-address {
+  font-size: 0.8rem;
+  color: var(--accent-color);
+  margin: 0;
+}
+.support-widget p.btc-address {
+  font-size: 0.9rem;
+  color: var(--accent-color);
+  margin-top: 0.5rem;
+  word-break: break-all;
+}
+
+/* Post Styling */
+.post {
+  background: var(--panel-bg);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  padding: 3rem;
+  margin-bottom: 3rem;
+  transition: var(--transition-smooth);
+  position: relative;
+}
+
+.post:hover {
+  border-color: var(--accent-color);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.3);
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  align-items: center;
+}
+
+.pub-key {
+  color: var(--accent-color);
+  font-size: 0.85rem;
+  background: rgba(0, 255, 204, 0.05);
+  padding: 0.4rem 0.8rem;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 255, 204, 0.2);
+  word-break: break-all;
+}
+
+.post-date {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.btc-badge {
+    font-size: 0.75rem;
+    color: #ff9900; /* Bitcoin Orange */
+    background: rgba(255, 153, 0, 0.05);
+    border: 1px solid rgba(255, 153, 0, 0.2);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    cursor: copy;
+    transition: var(--transition-smooth);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.btc-badge:hover {
+    background: rgba(255, 153, 0, 0.1);
+    border-color: #ff9900;
+    transform: scale(1.05);
+}
+
+.post-content {
+  font-size: 1rem;
+  color: #ccc;
+  margin-bottom: 1.5rem;
+  white-space: pre-wrap;
+}
+
+.post-image {
+  max-width: 100%;
+  border-radius: 2px;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.post-footer {
+  border-top: 1px solid var(--border-color);
+  padding-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.signature-block {
+  font-size: 0.7rem;
+  color: #444;
+  word-break: break-all;
+  max-width: 80%;
+}
+
+.btn-like {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  font-family: var(--font-mono);
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-like:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: var(--text-color);
+}
+
+/* Forms & Inputs */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+label {
+  display: block;
+  font-size: 0.85rem;
+  color: #888;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+input[type="text"],
+input[type="password"],
+select,
+textarea {
+  width: 100%;
+  background: var(--panel-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  font-family: var(--font-mono);
+  padding: 1.2rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  transition: var(--transition-smooth);
+}
+
+select {
+  appearance: none;
+  cursor: pointer;
+}
+
+select option {
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+input[type="file"] {
+  background: var(--panel-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  padding: 1rem;
+  width: 100%;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 10px rgba(184, 41, 234, 0.1);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 150px;
+}
+
+.btn {
+  background: var(--accent-color);
+  color: var(--bg-color);
+  border: none;
+  padding: 1rem 2rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 2px;
+  width: 100%;
+}
+
+.btn:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: var(--panel-bg);
+  border-color: var(--text-color);
+  box-shadow: none;
+}
+
+/* Alert Boxes */
+.alert {
+  padding: 1rem 1.5rem;
+  border-radius: 2px;
+  margin-bottom: 2rem;
+  border-left: 4px solid;
+}
+
+.alert-error {
+  background: rgba(255, 51, 102, 0.1);
+  border-color: var(--error-color);
+  color: #ffccdd;
+}
+
+.alert-info {
+  background: rgba(0, 255, 204, 0.05);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+/* Seed Display */
+.seed-box {
+  background: var(--panel-bg);
+  border: 1px dashed var(--accent-color);
+  padding: 2rem;
+  text-align: center;
+  font-size: 1.2rem;
+  color: var(--accent-color);
+  margin: 2rem 0;
+  letter-spacing: 1px;
+  word-spacing: 8px;
+}
+
+/* CSS Only Dropdown (Interactive Element without JS) */
+.css-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.css-dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  background: var(--bg-color);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 8px;
+  min-width: 220px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  border: 1px solid var(--border-color);
+  z-index: 1;
+}
+/* Glass Panel Widget */
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+}
+.css-dropdown:hover .css-dropdown-content {
+  display: block;
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.css-dropdown-content a {
+  color: var(--text-color);
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  margin: 0;
+}
+
+.css-dropdown-content a:hover {
+  background-color: #1a1a1a;
+  color: var(--accent-color);
+}
+
+/* Typography elements */
+h1 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  font-weight: 300;
+}
+h1 > strong {
+  color: var(--accent-color);
+  font-weight: 700;
+}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Singularity - Anonymous Stateless Microblog</title>
+    <meta name="description" content="A completely stateless, anonymous, and JS-free microblogging platform powered by cryptography.">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-checkbox" hidden>
+    <div class="container theme-wrapper">
+        <header>
+            <a href="/" class="brand">
+                <div class="singularity-point"></div>
+                SINGULARITY
+            </a>
+            <div style="display: flex; align-items: center; gap: 2rem;">
+                <label for="theme-toggle" class="css-theme-btn" title="Cycle Optics">⚙ Optics</label>
+                <nav class="css-dropdown">
+                    <a href="#">[ MENU ]</a>
+                    <div class="css-dropdown-content">
+                        <a href="/">&gt; Timeline</a>
+                        <a href="/directory">&gt; Darknet Directory</a>
+                        <a href="/publish">&gt; Transmit Post</a>
+                        <a href="/generate-seed">&gt; Generate Identity</a>
+                        <a href="/support">&gt; Support & Tips</a>
+                        <a href="/export">&gt; Export My Grid</a>
+                        <a href="/tools">&gt; Encryption Tools</a>
+                        <a href="/help">&gt; Help & Info</a>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        {% block content %}{% endblock %}
+        
+        <footer>
+            <div class="footer-content" style="text-align: center; margin-top: 5rem; padding: 3rem 1rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-bottom: 1rem;">
+                    To support the developer in maintaining and evolving the Singularity grid, consider a donation:
+                </p>
+                <div class="btc-wallet-box glass-panel" style="display: inline-block; padding: 1rem 2rem; border-radius: 12px; background: rgba(0, 255, 204, 0.05); border: 1px solid var(--accent-color); box-shadow: 0 0 15px rgba(0,255,204,0.1);">
+                    <code style="font-size: 1.1rem; color: var(--accent-color); user-select: all; cursor: copy;" title="Double click to copy">{{ project_address }}</code>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

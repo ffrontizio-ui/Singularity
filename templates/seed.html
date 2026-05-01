@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div>
+        <h1>Generate <strong>Identity</strong></h1>
+        <p style="color: #aaa;">Your mnemonic seed acts as your login credential and derives your public identity. <strong>Do not lose it. We do not store it.</strong></p>
+        
+        <div class="seed-box">
+            {{ seed }}
+        </div>
+        
+        <div class="alert alert-error" style="margin-top: 2rem;">
+            <strong>WARNING:</strong> Store these 15 words offline. Whoever possesses this sequence controls your digital identity.
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="/publish" class="btn btn-secondary" style="display: inline-block; text-decoration: none;">Proceed to Transmit</a>
+        </div>
+    </div>
+{% endblock %}

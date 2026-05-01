@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container" style="max-width: 900px; margin: 2rem auto;">
+        
+        <!-- Warning Banner -->
+        <div style="border: 1px solid var(--error-color); background: rgba(255,51,102,0.1); padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 1rem; color: var(--error-color); display: flex; align-items: center; gap: 1rem;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <strong>Always verify Onion links. Singularity provides these for informational purposes only.</strong>
+        </div>
+
+        {% if error %}
+        <div style="border: 1px solid var(--error-color); background: rgba(255,51,102,0.1); padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 2rem; color: var(--error-color); font-weight: bold;">
+            [!] {{ error }}
+        </div>
+        {% endif %}
+
+        {% if success %}
+        <div style="border: 1px solid var(--accent-color); background: rgba(0,255,204,0.1); padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 2rem; color: var(--accent-color); font-weight: bold;">
+            [✓] {{ success }}
+        </div>
+        {% endif %}
+
+        <h1 style="color: var(--accent-color); margin-bottom: 2rem; text-align: center; letter-spacing: 2px;">DARKNET DIRECTORY</h1>
+        
+        <!-- Contribute Form -->
+        <div class="post" style="padding: 1.5rem; margin-bottom: 3rem; background: rgba(0, 0, 0, 0.4); border: 1px dashed var(--accent-color);">
+            <h3 style="color: var(--accent-color); margin-bottom: 1rem;">// Contribute to adding onion links</h3>
+            <p style="color: #bbb; font-size: 0.9rem; margin-bottom: 1rem;">
+                Help grow the directory. Added links are automatically verified through Tor before being accepted.
+            </p>
+            <form id="submit-form" action="/directory/submit" method="POST" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+                <input type="text" name="name" id="link-name" class="input" placeholder="Platform Name" required style="flex: 1; min-width: 200px;">
+                <input type="url" name="url" id="link-url" class="input" placeholder="http://....onion" required style="flex: 2; min-width: 300px;">
+                <input type="hidden" name="nonce" id="submit-nonce" value="">
+                <button type="submit" id="submit-btn" class="btn" style="white-space: nowrap;" disabled>Fill fields first</button>
+            </form>
+            <div id="submit-pow-status" style="margin-top: 0.5rem; font-size: 0.75rem; color: #888;"></div>
+            
+            <script>
+                async function computeSubmitHash(msg) {
+                    const buf = new TextEncoder().encode(msg);
+                    const h = await crypto.subtle.digest('SHA-256', buf);
+                    return Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2,'0')).join('');
+                }
+
+                let powTimer = null;
+                function checkAndCalcPow() {
+                    const name = document.getElementById('link-name').value.trim();
+                    const url = document.getElementById('link-url').value.trim();
+                    const btn = document.getElementById('submit-btn');
+                    const status = document.getElementById('submit-pow-status');
+
+                    if (!name || !url) {
+                        btn.disabled = true;
+                        btn.innerText = 'Fill fields first';
+                        status.innerText = '';
+                        return;
+                    }
+
+                    btn.disabled = true;
+                    btn.innerText = 'Calculating PoW...';
+                    status.innerText = 'Computing proof of work...';
+
+                    const content = name + url;
+                    let nonce = 0;
+                    const diff = "000";
+
+                    const chunk = async () => {
+                        for (let i = 0; i < 500; i++) {
+                            const h = await computeSubmitHash(content + nonce.toString());
+                            if (h.startsWith(diff)) {
+                                document.getElementById('submit-nonce').value = nonce.toString();
+                                btn.disabled = false;
+                                btn.innerText = 'Submit & Verify';
+                                status.innerText = 'PoW solved ✓';
+                                return;
+                            }
+                            nonce++;
+                        }
+                        setTimeout(chunk, 0);
+                    };
+                    chunk();
+                }
+
+                document.getElementById('link-name').addEventListener('input', function() {
+                    if (powTimer) clearTimeout(powTimer);
+                    powTimer = setTimeout(checkAndCalcPow, 1000);
+                });
+                document.getElementById('link-url').addEventListener('input', function() {
+                    if (powTimer) clearTimeout(powTimer);
+                    powTimer = setTimeout(checkAndCalcPow, 1000);
+                });
+            </script>
+        </div>
+
+        {% if categorized %}
+            {% for category, links in categorized.items() %}
+            <div class="post" style="padding: 2rem; margin-bottom: 2rem;">
+                <h2 style="margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 1px dashed var(--border-color); color: var(--text-color);">// {{ category }}</h2>
+                
+                {% if links %}
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    {% for link in links %}
+                    {% set status_color = '#00ffcc' if link.is_online else '#ff3366' %}
+                    {% set status_label = 'ONLINE' if link.is_online else 'OFFLINE' %}
+                    <div style="display: flex; align-items: center; gap: 1rem; background: rgba(0,0,0,0.3); padding: 1rem 1.2rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                        
+                        <!-- Vote Buttons -->
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; margin-right: 0.5rem;">
+                            <button type="button" class="btn-vote" data-url="/directory/vote/{{ link.id }}" data-vote="1" data-id="{{ link.id }}" style="background: transparent; color: #00ffcc; border: 1px solid #00ffcc; padding: 0.2rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; width: 50px;">&#9650; <span id="uv-{{ link.id }}">{{ link.upvotes }}</span></button>
+                            <button type="button" class="btn-vote" data-url="/directory/vote/{{ link.id }}" data-vote="-1" data-id="{{ link.id }}" style="background: transparent; color: #ff3366; border: 1px solid #ff3366; padding: 0.2rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; width: 50px;">&#9660; <span id="dv-{{ link.id }}">{{ link.downvotes }}</span></button>
+                        </div>
+                        
+                        <!-- Status Dot -->
+                        <div title="{{ status_label }} (Last ping: {{ link.last_checked }})" style="width: 12px; height: 12px; min-width: 12px; border-radius: 50%; background: {{ status_color }}; box-shadow: 0 0 8px {{ status_color }};"></div>
+                        
+                        <!-- Link Info -->
+                        <div style="flex: 1; min-width: 0;">
+                            {% set name_color = '#ff3366' if not link.is_online else '#ffffff' %}
+                            <a href="/preview/{{ link.id }}" style="text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+                                <strong style="font-size: 1.1rem; color: {{ name_color }} !important; display: block;">{{ link.name }}</strong>
+                                {% if not link.is_online %}
+                                    <span style="font-size: 0.75rem; background: rgba(255,51,102,0.2); color: #ff3366; padding: 0.1rem 0.4rem; border-radius: 4px; border: 1px solid #ff3366;">OFFLINE</span>
+                                {% endif %}
+                                {% if link.is_unverified %}
+                                    <span style="font-size: 0.75rem; background: rgba(255,255,0,0.2); color: #ffffaa; padding: 0.1rem 0.4rem; border-radius: 4px; border: 1px solid #ffff00;">UNVERIFIED</span>
+                                {% endif %}
+                                {% if link.is_high_risk %}
+                                    <span style="font-size: 0.75rem; background: rgba(255,100,0,0.2); color: #ff6600; padding: 0.1rem 0.4rem; border-radius: 4px; border: 1px solid #ff6600; font-weight: bold; box-shadow: 0 0 5px #ff6600;">⚠ HIGH RISK / SCAM</span>
+                                {% endif %}
+                            </a>
+                            <span style="font-size: 0.85rem; color: #888888 !important; font-family: var(--font-mono); word-break: break-all; display: block; margin-top: 0.2rem;">{{ link.url }}</span>
+                        </div>
+                        
+                        <!-- Copy Button -->
+                        <button type="button" class="btn js-copy-btn" data-url="{{ link.url }}" style="padding: 0.5rem 1rem; font-size: 0.8rem; background: transparent; color: var(--text-color); border: 1px solid var(--border-color); white-space: nowrap; width: auto; flex-shrink: 0;" onclick="navigator.clipboard.writeText(this.getAttribute('data-url')).catch(function(){}); this.innerText='✓ Copied'; var b=this; setTimeout(function(){b.innerText='Copy .onion'},2000);">Copy .onion</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p style="color: #666666; font-style: italic; padding: 1rem 0;">No links indexed yet.</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="post" style="padding: 2rem; text-align: center;">
+                <p style="color: #888888; font-size: 1.1rem;">Directory is empty. Links will appear here once the database is seeded.</p>
+            </div>
+        {% endif %}
+
+    </div>
+
+    <!-- Anonymous Voting PoW Script -->
+    <script>
+        async function computeHashString(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        document.querySelectorAll('.btn-vote').forEach(btn => {
+            btn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                const btnEl = this;
+                const linkId = btnEl.getAttribute('data-id');
+                const voteVal = btnEl.getAttribute('data-vote');
+                const endpoint = btnEl.getAttribute('data-url');
+                
+                const span = document.getElementById((voteVal == 1 ? 'uv-' : 'dv-') + linkId);
+                const originalText = span.innerText;
+
+                btnEl.style.opacity = '0.5';
+                btnEl.disabled = true;
+                span.innerText = "...";
+
+                let nonce = 0;
+                const diff = "000"; // difficulty 3
+                let h = "";
+                
+                const computeChunk = async () => {
+                    for (let i = 0; i < 500; i++) {
+                        h = await computeHashString(linkId + nonce.toString());
+                        if (h.startsWith(diff)) break;
+                        nonce++;
+                    }
+
+                    if (!h.startsWith(diff)) {
+                        setTimeout(computeChunk, 0);
+                        return;
+                    }
+
+                    // PoW Solved
+                    const formData = new FormData();
+                    formData.append('vote', voteVal);
+                    formData.append('nonce', nonce.toString());
+
+                    try {
+                        const res = await fetch(endpoint, { method: 'POST', body: formData });
+                        const data = await res.json();
+                        
+                        if (data.success) {
+                            span.innerText = parseInt(originalText) + 1;
+                            btnEl.style.opacity = '1';
+                        } else {
+                            alert(data.error || "Voting failed.");
+                            span.innerText = originalText;
+                            btnEl.style.opacity = '1';
+                            btnEl.disabled = false;
+                        }
+                    } catch (err) {
+                        alert('Network error while voting.');
+                        span.innerText = originalText;
+                        btnEl.style.opacity = '1';
+                        btnEl.disabled = false;
+                    }
+                };
+                
+                // Start calculation
+                computeChunk();
+            });
+        });
+    </script>
+{% endblock %}

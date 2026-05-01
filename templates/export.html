@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container" style="max-width: 600px; margin: 4rem auto;">
+        <h1 style="text-align: center; color: var(--accent-color);">DATA EXPORT PROTOCOL</h1>
+        
+        <p style="text-align: center; margin-bottom: 2rem; color: rgba(255,255,255,0.7);">
+            Reclaim your Grid footprints. Submit your 15-word Seed to extract all your active broadcasts as a raw JSON ledger.
+        </p>
+
+        <form action="/export" method="POST" class="post" style="padding: 2rem;">
+            {% if error %}
+                <div class="alert alert-error" style="color: var(--error-color); border: 1px solid var(--error-color); padding: 1rem; margin-bottom: 1rem; border-radius: 8px;">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="mnemonic">Identity Seed (15 Words)</label>
+                <input type="password" id="mnemonic" name="mnemonic" required placeholder="word1 word2 word3 ...">
+            </div>
+
+            <button type="submit" class="btn" style="width: 100%; border-color: var(--accent-color); color: var(--accent-color);">Execute Data Extraction</button>
+        </form>
+    </div>
+{% endblock %}
